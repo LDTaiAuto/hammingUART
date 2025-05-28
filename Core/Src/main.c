@@ -65,6 +65,8 @@ static void MX_USART1_UART_Init(void);
 		// khai bao bien
 			char inStr[50] ; 
 			char inBit[50] ; 
+			char rxBuffer[5] ; 
+			char bufferData[4]  ; 
 		// ma ran phim 4x4 
 		char keyPad[4][4]= {
 			{'1', '2', '3', 'A'},
@@ -259,30 +261,6 @@ static void MX_USART1_UART_Init(void);
 				HAL_UART_Transmit(huart, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
 		}
 			
-		
-		void uartReceiveString(UART_HandleTypeDef *huart, char *buffer, uint16_t maxLength) {
-    uint8_t byte;
-    uint16_t index = 0;
-
-    while (1) {
-        // Nhận 1 byte
-        HAL_UART_Receive(huart, &byte, 1, HAL_MAX_DELAY);
-
-        // Nếu gặp ký tự kết thúc chuỗi
-        if (byte == '\r' || byte == '\n') {
-            break;
-        }
-
-        // Lưu vào buffer nếu chưa đầy
-        if (index < maxLength - 1) {
-            buffer[index++] = byte;
-        } else {
-            break; // tránh tràn bộ đệm
-        }
-    }
-
-    buffer[index] = '\0'; // Kết thúc chuỗi bằng NULL
-}
 
 		// Ham xu ly truyen du lieu  
 		void txHandle(){
@@ -340,6 +318,7 @@ static void MX_USART1_UART_Init(void);
 			HAL_Delay(100) ;
 			
 			
+			
 			lcd_clear(&lcd1);     
 			lcd_gotoxy(&lcd1, 0, 0);         
 			lcd_puts(&lcd1, buffer_hamEncode); 
@@ -361,14 +340,73 @@ static void MX_USART1_UART_Init(void);
 	}
 		
 		// Ham xu ly nhan du lieu  
-		void rxHandle(){
-			lcd_clear(&lcd1);
+		void rxHandle() {
+   
+    char bufferData[4]; 
+				 bufferData[3] = '\0' ;
+    lcd_clear(&lcd1); 
+    
+    if (HAL_UART_Receive(&huart1, (uint8_t*)bufferData, 3, HAL_MAX_DELAY) == HAL_OK) {
+        HAL_Delay(100);
+    }
 
-			uartReceiveString(&huart1, rxBuffer, sizeof(rxBuffer));
-			lcd_gotoxy(&lcd1, 0, 0);
-			lcd_puts(&lcd1, rxBuffer);
-			HAL_Delay(2000) ; 
+    int intDataRx = atoi(bufferData);  
+    
+
+    char buffer_inDataRx[50];
+    sprintf(buffer_inDataRx, "Input Data: %04X", intDataRx);
+
+   
+    char bufferbitPos[3]; 
+					bufferbitPos[2] ='\0' ;
+    if (HAL_UART_Receive(&huart1, (uint8_t*)bufferbitPos, 2, HAL_MAX_DELAY) == HAL_OK) {
+
+        HAL_Delay(100);
+    }
+
+    int bitPosRX = atoi(bufferbitPos); 
+
+
+    uint16_t hamDataRX = hamEncode(intDataRx);
+    char buffer_hamEncodeRX[50];
+    sprintf(buffer_hamEncodeRX, "Before: %04X", hamDataRX);
+
+			//Ma hamming sau khi dao bit 
+		char buffer_hamDataFlipedRX[50] ; 
+		uint16_t hamDataFlipedRX = flipBit(hamDataRX, bitPosRX) ;
+		sprintf(buffer_hamDataFlipedRX, "After: %04X \r\n", hamDataFlipedRX); 
+		
+		char buffer_deDataRX[50] ; 
+		uint16_t hamdeDataRX = hamDecode(hamDataFlipedRX);
+		sprintf(buffer_deDataRX, "Inputed: %04X", hamdeDataRX);
+		
+
+    lcd_clear(&lcd1);     
+		lcd_gotoxy(&lcd1, 0, 0);         
+		lcd_puts(&lcd1, buffer_inDataRx); 
+    
+		lcd_gotoxy(&lcd1, 0, 1);          
+		lcd_puts(&lcd1,"Bit Error: ");
+		lcd_put_int(&lcd1, bitPosRX); 
+		
+
+		lcd_clear(&lcd1);     
+		lcd_gotoxy(&lcd1, 0, 0);         
+		lcd_puts(&lcd1, buffer_hamEncodeRX); 
+		lcd_gotoxy(&lcd1, 0, 1);          
+		lcd_puts(&lcd1, buffer_hamDataFlipedRX);
+		HAL_Delay(2000) ; 
+		
+		lcd_clear(&lcd1);     
+		lcd_gotoxy(&lcd1, 0, 0);         
+		lcd_puts(&lcd1, buffer_deDataRX); 
+		
+		HAL_Delay(2000) ; 
+		
+		
+		
 }
+
 
 
  
