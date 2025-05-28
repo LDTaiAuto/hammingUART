@@ -1,0 +1,24 @@
+--cpu Cortex-M3
+"hamminguart\startup_stm32f103xb.o"
+"hamminguart\i2c_lcd.o"
+"hamminguart\main.o"
+"hamminguart\stm32f1xx_it.o"
+"hamminguart\stm32f1xx_hal_msp.o"
+"hamminguart\stm32f1xx_hal_gpio_ex.o"
+"hamminguart\stm32f1xx_hal_i2c.o"
+"hamminguart\stm32f1xx_hal.o"
+"hamminguart\stm32f1xx_hal_rcc.o"
+"hamminguart\stm32f1xx_hal_rcc_ex.o"
+"hamminguart\stm32f1xx_hal_gpio.o"
+"hamminguart\stm32f1xx_hal_dma.o"
+"hamminguart\stm32f1xx_hal_cortex.o"
+"hamminguart\stm32f1xx_hal_pwr.o"
+"hamminguart\stm32f1xx_hal_flash.o"
+"hamminguart\stm32f1xx_hal_flash_ex.o"
+"hamminguart\stm32f1xx_hal_exti.o"
+"hamminguart\stm32f1xx_hal_uart.o"
+"hamminguart\system_stm32f1xx.o"
+--strict --scatter "hammingUART\hammingUART.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "hammingUART.map" -o hammingUART\hammingUART.axf
